@@ -15,6 +15,7 @@ from torch import nn
 
 from torch.autograd import Variable
 import torch.optim as optim
+from torchsummary import summary
 
 if torch.cuda.is_available():
     T = torch.cuda
@@ -131,7 +132,7 @@ class Trainer(object):
         batch_idx, batch = next(self.image_enumerator)
         b = batch
         if self.use_cuda:
-            for k, v in batch.iteritems():
+            for k, v in batch.items():
                 b[k] = v.cuda()
 
         if batch_idx == len(self.image_sampler) - 1:
@@ -146,7 +147,7 @@ class Trainer(object):
         batch_idx, batch = next(self.video_enumerator)
         b = batch
         if self.use_cuda:
-            for k, v in batch.iteritems():
+            for k, v in batch.items():
                 b[k] = v.cuda()
 
         if batch_idx == len(self.video_sampler) - 1:
@@ -158,7 +159,7 @@ class Trainer(object):
         opt.zero_grad()
 
         real_batch = sample_true()
-        batch = Variable(real_batch['images'], requires_grad=False)
+        batch = Variable(real_batch['images'], requires_grad=False)  # TODO: Why is requires_grad False?
 
         # util.show_batch(batch.data)
 
@@ -166,6 +167,7 @@ class Trainer(object):
 
         real_labels, real_categorical = discriminator(batch)
         fake_labels, fake_categorical = discriminator(fake_batch.detach())
+
 
         ones = self.ones_like(real_labels)
         zeros = self.zeros_like(fake_labels)
@@ -248,7 +250,7 @@ class Trainer(object):
         start_time = time.time()
 
         while True:
-            generator.train()
+            generator.train()  # Sets the module in training mode
             image_discriminator.train()
             video_discriminator.train()
 
@@ -281,12 +283,12 @@ class Trainer(object):
             if batch_num % self.log_interval == 0:
 
                 log_string = "Batch %d" % batch_num
-                for k, v in logs.iteritems():
+                for k, v in logs.items():
                     log_string += " [%s] %5.3f" % (k, v / self.log_interval)
 
                 log_string += ". Took %5.2f" % (time.time() - start_time)
 
-                print log_string
+                print(log_string)
 
                 for tag, value in logs.items():
                     logger.scalar_summary(tag, value / self.log_interval, batch_num)

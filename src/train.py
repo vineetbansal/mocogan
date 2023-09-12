@@ -24,7 +24,7 @@ Options:
     --noise_sigma=<float>           when use_noise is specified, noise_sigma controls
                                     the magnitude of the noise [default: 0]
 
-    --image_discriminator=<type>    specifies image disciminator type (see models.py for a
+    --image_discriminator=<type>    specifies image discriminator type (see models.py for a
                                     list of available models) [default: PatchImageDiscriminator]
 
     --video_discriminator=<type>    specifies video discriminator type (see models.py for a
@@ -68,27 +68,24 @@ def build_discriminator(type, **kwargs):
 
 
 def video_transform(video, image_transform):
-    vid = []
-    for im in video:
-        vid.append(image_transform(im))
-
-    vid = torch.stack(vid).permute(1, 0, 2, 3)
+    vid = [image_transform(im) for im in video]
+    vid = torch.stack(vid).permute(1, 0, 2, 3)  # (n_channels, T, W, H)
 
     return vid
 
 
 if __name__ == "__main__":
     args = docopt.docopt(__doc__)
-    print args
+    print(args)
 
     n_channels = int(args['--n_channels'])
 
     image_transforms = transforms.Compose([
         PIL.Image.fromarray,
-        transforms.Scale(int(args["--image_size"])),
+        transforms.Resize(int(args["--image_size"])),
         transforms.ToTensor(),
         lambda x: x[:n_channels, ::],
-        transforms.Normalize((0.5, 0.5, .5), (0.5, 0.5, 0.5)),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
 
     video_transforms = functools.partial(video_transform, image_transform=image_transforms)
@@ -105,7 +102,7 @@ if __name__ == "__main__":
     image_dataset = data.ImageDataset(dataset, image_transforms)
     image_loader = DataLoader(image_dataset, batch_size=image_batch, drop_last=True, num_workers=2, shuffle=True)
 
-    video_dataset = data.VideoDataset(dataset, 16, 2, video_transforms)
+    video_dataset = data.VideoDataset(dataset, 16, 2, video_transforms)  # video length = 16, every_nth = 2
     video_loader = DataLoader(video_dataset, batch_size=video_batch, drop_last=True, num_workers=2, shuffle=True)
 
     generator = models.VideoGenerator(n_channels, dim_z_content, dim_z_category, dim_z_motion, video_length)

@@ -12,7 +12,7 @@ Usage:
 
 Options:
     -n, --num_videos=<count>                number of videos to generate [default: 10]
-    -o, --output_format=<ext>               save videos as [default: gif]
+    -o, --output_format=<ext>               save videos as [default: mp4]
     -f, --number_of_frames=<count>          generate videos with that many frames [default: 16]
 
     --ffmpeg=<str>                          ffmpeg executable (on windows should be ffmpeg.exe). Make sure
@@ -49,7 +49,7 @@ def save_video(ffmpeg, video, filename):
 if __name__ == "__main__":
     args = docopt.docopt(__doc__)
 
-    generator = torch.load(args["<model>"], map_location={'cuda:0': 'cpu'})
+    generator = torch.load(args["<model>"], map_location={'cuda:0': 'cuda:0'})
     generator.eval()
     num_videos = int(args['--num_videos'])
     output_folder = args['<output_folder>']
@@ -58,6 +58,6 @@ if __name__ == "__main__":
         os.makedirs(output_folder)
 
     for i in range(num_videos):
-        v, _ = generator.sample_videos(1, int(args['--number_of_frames']))
+        v, xx = generator.sample_videos(1, int(args['--number_of_frames']))
         video = videos_to_numpy(v).squeeze().transpose((1, 2, 3, 0))
         save_video(args["--ffmpeg"], video, os.path.join(output_folder, "{}.{}".format(i, args['--output_format'])))

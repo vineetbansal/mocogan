@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.utils.data
 from torch.autograd import Variable
-
+from torchsummary import summary
 import numpy as np
 
 if torch.cuda.is_available():
@@ -36,26 +36,26 @@ class ImageDiscriminator(nn.Module):
         self.use_noise = use_noise
 
         self.main = nn.Sequential(
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv2d(n_channels, ndf, 4, 2, 1, bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv2d(in_channels=n_channels, out_channels=ndf, kernel_size=4, stride=2, padding=1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv2d(in_channels=ndf, out_channels=ndf * 2, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(ndf * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv2d(in_channels=ndf * 2, out_channels=ndf * 4, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(ndf * 4),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv2d(in_channels=ndf * 4, out_channels=ndf * 8, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(ndf * 8),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+            nn.Conv2d(in_channels=ndf * 8, out_channels=1, kernel_size=4, stride=1, padding=0, bias=False),
         )
 
     def forward(self, input):
@@ -70,22 +70,22 @@ class PatchImageDiscriminator(nn.Module):
         self.use_noise = use_noise
 
         self.main = nn.Sequential(
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv2d(n_channels, ndf, 4, 2, 1, bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv2d(in_channels=n_channels, out_channels=ndf, kernel_size=4, stride=2, padding=1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv2d(in_channels=ndf, out_channels=ndf * 2, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(ndf * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv2d(in_channels=ndf * 2, out_channels=ndf * 4, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(ndf * 4),
             nn.LeakyReLU(0.2, inplace=True),
 
             Noise(use_noise, sigma=noise_sigma),
-            nn.Conv2d(ndf * 4, 1, 4, 2, 1, bias=False),
+            nn.Conv2d(in_channels=ndf * 4, out_channels=1, kernel_size=4, stride=2, padding=1, bias=False),
         )
 
     def forward(self, input):
@@ -103,16 +103,16 @@ class PatchVideoDiscriminator(nn.Module):
         self.bn_use_gamma = bn_use_gamma
 
         self.main = nn.Sequential(
-            Noise(use_noise, sigma=noise_sigma),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
             nn.Conv3d(n_channels, ndf, 4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
             nn.Conv3d(ndf, ndf * 2, 4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
             nn.BatchNorm3d(ndf * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
             nn.Conv3d(ndf * 2, ndf * 4, 4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
             nn.BatchNorm3d(ndf * 4),
             nn.LeakyReLU(0.2, inplace=True),
@@ -136,26 +136,26 @@ class VideoDiscriminator(nn.Module):
         self.bn_use_gamma = bn_use_gamma
 
         self.main = nn.Sequential(
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv3d(n_channels, ndf, 4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv3d(in_channels=n_channels, out_channels=ndf, kernel_size=4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv3d(ndf, ndf * 2, 4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv3d(in_channels=ndf, out_channels=ndf * 2, kernel_size=4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
             nn.BatchNorm3d(ndf * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv3d(ndf * 2, ndf * 4, 4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv3d(in_channels=ndf * 2, out_channels=ndf * 4, kernel_size=4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
             nn.BatchNorm3d(ndf * 4),
             nn.LeakyReLU(0.2, inplace=True),
 
-            Noise(use_noise, sigma=noise_sigma),
-            nn.Conv3d(ndf * 4, ndf * 8, 4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
+            Noise(use_noise=use_noise, sigma=noise_sigma),
+            nn.Conv3d(in_channels=ndf * 4, out_channels=ndf * 8, kernel_size=4, stride=(1, 2, 2), padding=(0, 1, 1), bias=False),
             nn.BatchNorm3d(ndf * 8),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv3d(ndf * 8, n_output_neurons, 4, 1, 0, bias=False),
+            nn.Conv3d(in_channels=ndf * 8, out_channels=n_output_neurons, kernel_size=4, stride=1, padding=0, bias=False),
         )
 
     def forward(self, input):
@@ -198,19 +198,19 @@ class VideoGenerator(nn.Module):
         self.recurrent = nn.GRUCell(dim_z_motion, dim_z_motion)
 
         self.main = nn.Sequential(
-            nn.ConvTranspose2d(dim_z, ngf * 8, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(ngf * 8),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf * 4),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf * 2),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(ngf, self.n_channels, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(in_channels=dim_z, out_channels=ngf * 8, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(num_features=ngf * 8),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(in_channels=ngf * 8, out_channels=ngf * 4, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(num_features=ngf * 4),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(in_channels=ngf * 4, out_channels=ngf * 2, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(num_features=ngf * 2),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(in_channels=ngf * 2, out_channels=ngf, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(num_features=ngf),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(in_channels=ngf, out_channels=self.n_channels, kernel_size=4, stride=2, padding=1, bias=False),
             nn.Tanh()
         )
 
@@ -274,7 +274,7 @@ class VideoGenerator(nn.Module):
         z, z_category_labels = self.sample_z_video(num_samples, video_len)
 
         h = self.main(z.view(z.size(0), z.size(1), 1, 1))
-        h = h.view(h.size(0) / video_len, video_len, self.n_channels, h.size(3), h.size(3))
+        h = h.view(h.size(0) // video_len, video_len, self.n_channels, h.size(3), h.size(3))
 
         z_category_labels = torch.from_numpy(z_category_labels)
 
@@ -285,7 +285,7 @@ class VideoGenerator(nn.Module):
         return h, Variable(z_category_labels, requires_grad=False)
 
     def sample_images(self, num_samples):
-        z, z_category_labels = self.sample_z_video(num_samples * self.video_length * 2)
+        z, z_category_labels = self.sample_z_video(num_samples * self.video_length * 2)  # TODO: Where did the 2 come from? Why not just num_samples?
 
         j = np.sort(np.random.choice(z.size(0), num_samples, replace=False)).astype(np.int64)
         z = z[j, ::]
